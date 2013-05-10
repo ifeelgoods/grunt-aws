@@ -116,7 +116,8 @@ S3Service = (function(_super) {
         Body: buffer,
         Bucket: _this.opts.bucket,
         Key: key,
-        ContentType: _this.opts.contentType || mime.lookup(file)
+        ContentType: _this.opts.contentType || mime.lookup(file),
+        ContentEncoding: 'gzip'
       };
       putSuccess = function(err, data) {
         if (err) {
