@@ -82,12 +82,6 @@ S3Service = (function(_super) {
 
   S3Service.prototype.runGlob = function(entry, method, methodsComplete) {
     var _this = this;
-    console.log("entry = ");
-    console.log(entry);
-    console.log("method = ");
-    console.log(method);
-    console.log("methodComplete = ");
-    console.log(methodsComplete);
     var globs = entry.path;
     var opts = entry.options;
 
@@ -135,10 +129,6 @@ S3Service = (function(_super) {
     var _this = this;
     var file = fileEntry.filename;
     var fileOpts = fileEntry.opts;
-    console.log("file =");
-    console.log(file);
-    console.log("fileOpts =");
-    console.log(fileOpts);
 
     return fs.readFile(file, function(err, buffer) {
       var key, object, putSuccess;
@@ -155,8 +145,7 @@ S3Service = (function(_super) {
         ContentType: _this.opts.contentType || mime.lookup(file)
       };
       if (fileOpts && fileOpts.ContentEncoding) {
-        console.log("fileOpts =");
-        console.log(fileOpts);
+        _this.grunt.log.ok("" + (_this.debug ? 'DEBUG ' : '') + "ContentEncoding:" + fileOpts.ContentEncoding + " for " + key);
         object.ContentEncoding = fileOpts.ContentEncoding;
       }
 
