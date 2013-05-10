@@ -314,6 +314,11 @@ module.exports = function(grunt) {
       if(!object.ContentType)
         object.ContentType = mime.lookup(dest);
 
+      //default the encoding to gzip
+      //@see: https://github.com/ifeelgoods/grunt-aws/commit/198a0b7
+      if(!object.ContentEncoding)
+        object.ContentEncoding: 'gzip';
+
       //upload!
       S3.putObject(object, putComplete);
 
