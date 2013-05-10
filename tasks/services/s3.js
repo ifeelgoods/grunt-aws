@@ -26,7 +26,7 @@ S3Service = (function(_super) {
   S3Service.prototype.name = 's3';
 
   S3Service.prototype.defaults = {
-    access: 'public-access',
+    access: 'public-read',
     endpoint: 's3-ap-southeast-2.amazonaws.com',
     concurrent: 20
   };
