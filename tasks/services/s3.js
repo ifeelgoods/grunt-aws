@@ -70,8 +70,6 @@ S3Service = (function(_super) {
     if (!(entries && entries.length)) {
       return methodsComplete();
     }
-    console.log("entries = ");
-    console.log(entries);
     return async.parallel(
       _.map(entries, 
         function(entry) {
@@ -93,7 +91,6 @@ S3Service = (function(_super) {
         return methodsComplete(err);
       }
       var filesAndOpts = _.map(files, function(filename) { return {filename: filename, opts: opts}});
-      console.log(filesAndOpts);
       return async.eachLimit(filesAndOpts, _this.opts.concurrent, method, methodsComplete);
     });
   };
