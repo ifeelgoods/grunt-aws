@@ -26,8 +26,6 @@ AWSTask = (function() {
     this.task = task;
     this.name = this.task.target;
     this.grunt.config.requires(['aws', this.name, 'service']);
-    this.grunt.config.requires(['aws', 'options', 'config', 'accessKeyId']);
-    this.grunt.config.requires(['aws', 'options', 'config', 'secretAccessKey']);
     this.data = this.task.data;
     this.service = this.task.data.service;
     this.opts = this.task.options();
@@ -36,8 +34,23 @@ AWSTask = (function() {
   }
 
   AWSTask.prototype.config = function() {
-    AWS.config.update(this.opts.config);
-    return this.startService();
+    var credentials = new AWS.Credentials();
+    var that = this;
+    credentials.get(function(err) {
+      if (err) {
+        that.grunt.config.requires(['aws', 'options', 'config', 'accessKeyId']);
+        that.grunt.config.requires(['aws', 'options', 'config', 'secretAccessKey']);
+        AWS.config.update(that.opts.config);
+        return that.startService();
+      } else {
+        AWS.config.update({
+          accessKeyId: credentials.accessKeyId,
+          secretAccessKey: credentials.secretAccessKey,
+          region: "us-east-1"
+        });
+        return that.startService();
+      } 
+    });
   };
 
   AWSTask.prototype.startService = function() {

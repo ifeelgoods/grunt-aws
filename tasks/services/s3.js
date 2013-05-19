@@ -26,7 +26,7 @@ S3Service = (function(_super) {
   S3Service.prototype.name = 's3';
 
   S3Service.prototype.defaults = {
-    access: 'public-access',
+    access: 'public-read',
     endpoint: 's3-ap-southeast-2.amazonaws.com',
     concurrent: 20
   };
@@ -55,15 +55,33 @@ S3Service = (function(_super) {
     }
     async.series([
       function(cb) {
-        return _this.runGlob(_this.data.del, _this.deleteObject, cb);
+        return _this.runGlobAll(_this.data.del, _this.deleteObject, cb);
       }, function(cb) {
-        return _this.runGlob(_this.data.put, _this.putObject, cb);
+        return _this.runGlobAll(_this.data.put, _this.putObject, cb);
       }
     ], this.complete);
   }
 
-  S3Service.prototype.runGlob = function(globs, method, methodsComplete) {
+  S3Service.prototype.runGlobAll = function(entries, method, methodsComplete) {
     var _this = this;
+    this.method = method;
+    this.methodsComplete = methodsComplete;
+
+    if (!(entries && entries.length)) {
+      return methodsComplete();
+    }
+    return async.parallel(
+      _.map(entries, 
+        function(entry) {
+          return function (cb) {return _this.runGlob(entry, _this.method, cb);}
+        })
+    , _this.complete);
+  };
+
+  S3Service.prototype.runGlob = function(entry, method, methodsComplete) {
+    var _this = this;
+    var globs = entry.path;
+    var opts = entry.options;
 
     if (!(globs && globs.length)) {
       return methodsComplete();
@@ -72,12 +90,15 @@ S3Service = (function(_super) {
       if (err) {
         return methodsComplete(err);
       }
-      return async.eachLimit(files, _this.opts.concurrent, method, methodsComplete);
+      var filesAndOpts = _.map(files, function(filename) { return {filename: filename, opts: opts}});
+      return async.eachLimit(filesAndOpts, _this.opts.concurrent, method, methodsComplete);
     });
   };
 
-  S3Service.prototype.deleteObject = function(file, callback) {
+  S3Service.prototype.deleteObject = function(fileEntry, callback) {
     var _this = this;
+    var file = fileEntry.filename;
+    var fileOpts = fileEntry.opts;
 
     return fs.readFile(file, function(err, buffer) {
       var key, object;
@@ -101,8 +122,10 @@ S3Service = (function(_super) {
     });
   };
 
-  S3Service.prototype.putObject = function(file, callback) {
+  S3Service.prototype.putObject = function(fileEntry, callback) {
     var _this = this;
+    var file = fileEntry.filename;
+    var fileOpts = fileEntry.opts;
 
     return fs.readFile(file, function(err, buffer) {
       var key, object, putSuccess;
@@ -118,6 +141,11 @@ S3Service = (function(_super) {
         Key: key,
         ContentType: _this.opts.contentType || mime.lookup(file)
       };
+      if (fileOpts && fileOpts.ContentEncoding) {
+        _this.grunt.log.ok("" + (_this.debug ? 'DEBUG ' : '') + "ContentEncoding:" + fileOpts.ContentEncoding + " for " + key);
+        object.ContentEncoding = fileOpts.ContentEncoding;
+      }
+
       putSuccess = function(err, data) {
         if (err) {
           return callback(err);
