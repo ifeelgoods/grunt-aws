@@ -30,16 +30,24 @@ grunt.initConfig({
         secretAccessKey: '...'
       },
       s3: {
-        options: {
-          root: 'build/'
-          bucket: '...'
-          access: 'public-read'
-        }
-      }
+        root: 'build/',
+        bucket: '...',
+        access: 'public-read'
+      }  
     },
     deploy: {
-      service: 's3'
-      put: ['build/**/*.*']
+      service: 's3',
+      put: [
+        {
+          path : 'dist/**/*.{png,appcache}',
+        },
+        {
+          path : 'dist/**/*.{js,css,html,json}',
+          options: {
+            ContentEncoding: 'gzip'
+          },
+        }
+      ]
     }
   }
 });
@@ -123,7 +131,11 @@ grunt.initConfig({
         bucket: '...'
         access: 'public-read'
       }
-      put: ['build/**/*.*']
+      put: [
+        {
+          path : 'build/**/*.*',
+        }
+      ]
     }
   }
 });
