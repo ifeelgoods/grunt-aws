@@ -62,7 +62,6 @@ AWSTask = (function() {
     }
     if (this.opts[this.service]) {
       serviceOpts = this.opts[this.service];
-      console.log (serviceOpts);
       delete this.opts[this.service];
     }
     this.opts = _.extend({}, this.defaults, Service.prototype.defaults || {}, serviceOpts || {}, this.opts);
